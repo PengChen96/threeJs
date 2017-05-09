@@ -6,28 +6,10 @@
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<style>
 			body {
-				background-color: #000000;
+				background-color: #000;
 				margin: 0px;
 				overflow: hidden;
-				font-family:Monospace;
-				font-size:13px;
-				text-align:center;
-				font-weight: bold;
-				text-align:center;
 			}
-
-			a {
-				color:#0078ff;
-			}
-
-			#info {
-				color:#fff;
-				position: absolute;
-				top: 0px; width: 100%;
-				padding: 5px;
-				z-index:100;
-			}
-
 		</style>
 	</head>
 	<body>
@@ -52,118 +34,64 @@
 			animate();
 
 			function init() {
-
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
-
-				camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 2, 2000 );
-				camera.position.z = 1000;
-
-				scene = new THREE.Scene();
-				scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
-
-				geometry = new THREE.Geometry();
-
-				sprite = new THREE.TextureLoader().load( "../../img/sprites/disc.png" );
-
-				for ( i = 0; i < 10000; i ++ ) {
-
-					var vertex = new THREE.Vector3();
-					vertex.x = 2000 * Math.random() - 1000;
-					vertex.y = 2000 * Math.random() - 1000;
-					vertex.z = 2000 * Math.random() - 1000;
-
-					geometry.vertices.push( vertex );
-
-				}
-
-				material = new THREE.PointsMaterial( { size: 35, sizeAttenuation: false, map: sprite, alphaTest: 0.5, transparent: true } );
-				material.color.setHSL( 1.0, 0.3, 0.7 );
-
-				particles = new THREE.Points( geometry, material );
-				scene.add( particles );
-
-				//
-
-				renderer = new THREE.WebGLRenderer();
-				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				container.appendChild( renderer.domElement );
-
-				//
-
-				stats = new Stats();
-				stats.showPanel( 0 );	//0: fps, 1: ms, 2: mb, 3+: custom
-				container.appendChild( stats.dom );
-				//
+				
+				//相机
+				init_camera();
+				//场景
+				init_scene();
+				//几何体
+				init_geometry();
+				//渲染器
+				init_renderer();
+				//fps
+				stats();
 
 				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 				document.addEventListener( 'touchstart', onDocumentTouchStart, false );
 				document.addEventListener( 'touchmove', onDocumentTouchMove, false );
-
 				//
-
 				window.addEventListener( 'resize', onWindowResize, false );
-
 			}
 
 			function onWindowResize() {
-
 				windowHalfX = window.innerWidth / 2;
 				windowHalfY = window.innerHeight / 2;
-
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
-
 				renderer.setSize( window.innerWidth, window.innerHeight );
-
 			}
 
 			function onDocumentMouseMove( event ) {
-
 				mouseX = event.clientX - windowHalfX;
 				mouseY = event.clientY - windowHalfY;
-
 			}
 
 			function onDocumentTouchStart( event ) {
-
 				if ( event.touches.length == 1 ) {
-
 					event.preventDefault();
-
 					mouseX = event.touches[ 0 ].pageX - windowHalfX;
 					mouseY = event.touches[ 0 ].pageY - windowHalfY;
-
 				}
 			}
 
 			function onDocumentTouchMove( event ) {
-
 				if ( event.touches.length == 1 ) {
-
 					event.preventDefault();
-
 					mouseX = event.touches[ 0 ].pageX - windowHalfX;
 					mouseY = event.touches[ 0 ].pageY - windowHalfY;
-
 				}
 
 			}
 
-			//
-
 			function animate() {
-
 				requestAnimationFrame( animate );
-
 				render();
 				stats.update();
-
 			}
-
+			//渲染
 			function render() {
-
 				var time = Date.now() * 0.00005;
 
 				camera.position.x += ( mouseX - camera.position.x ) * 0.05;
@@ -175,9 +103,51 @@
 				material.color.setHSL( h, 0.5, 0.5 );
 
 				renderer.render( scene, camera );
-
 			}
+			/*----------------分割线---------------------*/
+			function init_scene(){
+				scene = new THREE.Scene();
+				//设置指数雾效（雾色，密度）  密度定义雾将增长多快
+				scene.fog = new THREE.FogExp2(0x000000, 0.001 );
+			}
+			function init_camera(){
+				//透视相机
+				camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 2, 2000 );
+				camera.position.z = 1000;
+			}
+			//几何体
+			function init_geometry(){
+				geometry = new THREE.Geometry();
+				sprite = new THREE.TextureLoader().load( "../../img/sprites/disc.png" );
 
+				for ( i = 0; i < 10000; i ++ ) {
+					var vertex = new THREE.Vector3();
+					vertex.x = 2000 * Math.random() - 1000;
+					vertex.y = 2000 * Math.random() - 1000;
+					vertex.z = 2000 * Math.random() - 1000;
+
+					geometry.vertices.push( vertex );
+				}
+
+				material = new THREE.PointsMaterial( { size: 35, sizeAttenuation: false, map: sprite, alphaTest: 0.5, transparent: true } );
+				material.color.setHSL( 1.0, 0.3, 0.7 );
+
+				particles = new THREE.Points( geometry, material );
+				scene.add( particles );
+			}
+			//渲染器
+			function init_renderer(){
+				renderer = new THREE.WebGLRenderer();
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+			}
+			//统计 fps
+			function stats(){
+				stats = new Stats();
+				stats.showPanel( 0 );	//0: fps, 1: ms, 2: mb, 3+: custom
+				container.appendChild( stats.dom );
+			}
 		</script>
 	</body>
 </html>
